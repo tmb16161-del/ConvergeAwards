@@ -15,8 +15,7 @@
 
   1. EVENT      - date, venue, one line of welcome copy
   2. SEATING    - paste your attendee list here when you have it
-  3. TABLES     - where each table sits on the floorplan
-  4. FINALISTS  - the 34 profiles, already filled in
+  3. FINALISTS  - the 34 profiles, already filled in
 ================================================================================
 -->
 <script>
@@ -26,63 +25,313 @@
 const EVENT = {
   title:    "Converge Awards",
   year:     "2026",
-  date:     "Add the date here",
-  venue:    "Add the venue here",
-  welcome:  "Thirty-four finalists, five challenges, one evening. Browse the class of 2026 below, or find your table.",
+  date:     "1 October 2026",
+  venue:    "Barony Hall, Glasgow",
+  welcome:  "Celebrating the great minds moving innovation forward. Browse the class of 2026 below, or find your table.",
   email:    "marketing@convergechallenge.com"
 };
 
 /* ---------------------------------------------------------------------------
-   2. SEATING LIST  — paste from your spreadsheet between the backticks.
+   2. SEATING LIST — paste your spreadsheet between the backticks.
 
-   One guest per line. Copy two columns straight out of Excel or Sheets
-   (Name, Table) and paste — the tab between them is handled automatically.
-   A comma works too: the text after the LAST comma is read as the table,
-   so "Smith, Jane, 4" still works.
-   An optional third tab-separated column is shown under the guest's name.
+   SEATING_COLUMNS tells the page what your columns are, left to right.
+   It is already set for the sheet you have: Last Name, First Name, Assigned Table.
+   If that ever changes, the other options are:
+        "first, last, table"   |   "name, table"   |   "name, table, org"
+   ("org" is optional, and shows as a small grey line under the guest's name.)
 
-        Jane Smith      4       University of Glasgow
-        Ahmed Khan      4
-        Smith, Jane, 12
+   To fill it in: select the three columns in Excel, copy, paste below.
+   The tabs Excel puts between columns are handled for you, and a header row
+   is ignored. It should end up looking like this:
 
-   Leave it empty and the seat finder shows a "coming soon" message,
-   so you can publish the finalist profiles now and add seating later.
+        Smith	Jane	4
+        Khan	Ahmed	4
+        Nair	Priya	12
+
+   Names are displayed first-name-first — "Jane Smith" — and a guest can find
+   themselves by typing either part of their name.
+
+   Leave it empty and the seat finder shows a "coming soon" message, so you
+   can publish the finalist profiles now and add the seating later.
 --------------------------------------------------------------------------- */
+const SEATING_COLUMNS = "last, first, table";
+
+/* Should a guest's search result also list the other people at their table?
+   Set this to false if you'd rather each person only ever sees their own
+   name and table number. */
+const SHOW_TABLEMATES = true;
+
 const SEATING = `
+Alexander-Young,Jennifer,25
+Anderson,Marion,22
+Andrick,Emma,10
+Armstrong,Susan,22
+Armstrong,Fiona,23
+Armstrong,Lucy,24
+Arnold,Louise,14
+Arnold,Rachael,25
+Atkinson,Paul,7
+Babbie,Shannon,26
+Bain,Connor,19
+Bales,Stephanie,6
+Barnes,Henry,11
+Bartram,Thomas,27
+Black,Lesley,21
+Blaney,Barbara,19
+Bown,Professor James,3
+Boyle,Matthew,25
+Breslin,Catherine,14
+Brew,David,6
+Bridle,Helen,14
+Brock,Carolyn,22
+Brouwers,Mary Jane,11
+Brown,Adam,12
+Brown,Lesley,12
+Brown,Gary,27
+Burchell,Chris,1
+Bustard,Mark,3
+Byford,Ross,8
+Caceres Fegrero,Yazmin,24
+Campbell Bannerman,Marcus,17
+Campos-Gaona,David,20
+Cavalluzzo,Claudia,6
+Chopra,Joey,22
+Clark,David,8
+Clark,Sarah,11
+Cleary,Martin,11
+Cochrane,Ruth,15
+Coffee,Pete,12
+Cook,Mark,8
+Cox,Sophie,20
+Cross,Helen,1
+Cutting,Nathalie,19
+Davidson,Fordyce,8
+Davies,Howell,17
+Dekeryte,Ruta,27
+Delan Senevirathne,Rushdi,26
+Devlin,Paul,12
+Devoy,Paul,2
+Dhingra,Kartikay,17
+Diamond,Annie,27
+Dines,Julian,9
+Drummond,Gael,16
+Dudley,Nathan,24
+Duguid,Lorna,6
+Duncan,Edward,10
+Edwards,Stephanie,15
+Elhoweris,Ammar,17
+Elliott,Tristan,7
+Fannin,Nick,21
+Feighery,Alan,22
+Fenton,Ryan,15
+Ferguson,Veronica,12
+Finlayson,Monica,21
+Fitch,Lois,4
+Fleming,Gillian,10
+Foreman,Alix,27
+Forster,Kate,21
+Fournet,Andrew,9
+Fraser-Walther,Morven,7
+Gammon,Dominic,27
+Gaskell,Professor Craig,2
+Gillespie,Gary,3
+Gillespie,Bronagh,24
+Godbarge,Clément,16
+Goodfellow,Laura,5
+Gorgoni,Barbara,18
+Gorman,Victoria,14
+Goussettis,George,9
+Greenhalgh,Michael,4
+Gunn,Alisdair,6
+Hachemi,Flora,16
+Hacking,Bonnie,21
+Hagerty,Joanne,26
+Ham,Steve,6
+Hamill,Steven,22
+Hamill,Tony,25
+Hand,Duncan,10
+Hannah,Stuart,10
+Hardy,Sarah,5
+Harris,Derek,9
+Harvey,Euan,9
+Henderson,Ruairidh,8
+Henn,Verena,21
+Herron,Lissa,3
+Hewitt-Dundas,Professor Nola,2
+Hill,John,27
+Hogarth,Mark,17
+Holmes,Scott,21
+Hossain,Mamdud,18
+Howe,Dylan,16
+Hughes,Dave,7
+Hughes,Ally,8
+Imani,Shahida,8
+Ireland,Fiona,7
+Isdale,Ross,23
+Ishkov,Oleg,20
+Jackson,Lesley,4
+Jagadamma,Kavi,15
+James,Ben,1
+Jamieson,Michael,21
+Johnson,Ian,11
+Johnston,Magnus,7
+Jones,Eve,14
+Josiah,Aisha,25
+Kasim,Aisha,26
+Kelly,Gabriel,15
+Kelly,Orla,24
+Kent,Carolyn,16
+Keogh,Deborah,16
+Kerr,Steve,5
+Khan,Uzma,2
+King,Michael,3
+Kosterka,Adam,2
+Kremer,Sam,8
+Kufcsák,András,10
+Kumar,Suresh,5
+Lavin,Meera,25
+Levington,Meryl,4
+Lockhart,Josiah,1
+Loedel,Emma,11
+Loveday,Alison,7
+Low,Carolyn,27
+Lyons,Abigail,19
+Macaulay,Calum,18
+MacIntosh,Robert,1
+Mackenzie,Moira,3
+Mackenzie,John,10
+Mackie,Eoghan,4
+Macleod,Alasdair,11
+Macleod,Charles,14
+MacLeod,Kenneth,22
+Madeira,Natasha,20
+Maitland,Fraser,19
+Malik,Poonam,5
+Mao,Yujie,15
+Martin,Tristin,9
+Martin,Leanne,9
+Mason,Fiona,11
+Mathers,John,6
+May,Hayleigh,6
+Mburine,Ednilson,20
+McArthur,Professor Stephen,2
+McConnachie,Alexandra,19
+McCormick,Eilidh,18
+McEnhill,Niamh,27
+McGoff,Andy,2
+McGrail,Erin,7
+McGrath,Sean,5
+McIntosh,Alison,6
+McIver,Mirren,25
+McKiddie,Dan,14
+McKinstry,Kieran,21
+McLaughlin,Ronan,12
+McLennan,Ross,25
+McMillan,Nicola,3
+McNaughton,Oran,16
+McNeill,Andrew,11
+McNicoll,Brian,7
+McPherson,Claire,2
+Medero,Gabriela,1
+Medina-Lombardero,Sara,11
+Middleton,Jamie,25
+Milne,Chris,20
+Minty,Alister,22
+Moir,Ruth,4
+Mole,Richard,23
+Morgan,Heather May,3
+Morton,Margaret,5
+Moule,Chris,7
+Murad,Sayed,24
+Murray,Gillian,1
+Murray,Nick,17
+Nazarzadeh,Elijah,10
+Nicholl,Emmi,12
+Nicholson,Natasha,9
+O'Malley,Andrew,23
+Obiagwu,Ijeoma,26
+Ordoyno,Claire,20
+Orofino Pena,Clara,18
+Osofero,Israel,5
+Otugha,Lynn,18
+Palliyil,Soumya,10
+Pape,Leah,4
+Peake,Stephen,20
+Pecur,Toa,14
+Petrie,Sarah,20
+Pfefferkorn,Tom,26
+Philp,David,5
+Porritt,Victoria,17
+Porter,Andy,4
+Primrose,Ruaidhri,8
+Pui Lo,Lok,16
+Purvis,Polly,1
+Quinn,Brian,4
+Rafee Ahamed,Rafee,26
+Raimbach,Daniel,9
+Robbins,Dr Mason,9
+Robertson,John,15
+Robinson,Adam,18
+Robson,Cara,15
+Rodger,Karen,8
+Ross,Calum,14
+Rothnie,Craig,19
+Saeed,Muhammed,24
+Salami,Michael,23
+Saraswat,Govind,24
+Scott,Andrew,2
+Scott,Jen,17
+Sellors,Molly,25
+Semple,Calum,2
+Shaw,Eleanor,1
+Shaw,Derek,1
+Shchukin,Alexander,18
+Shepperson,Justine,26
+Shibuya,Jani,20
+Smith,Michiel,14
+Smith,Lesley,19
+Speakman,Alex,12
+Spice,Stephen,17
+Spinola,Hugo,23
+Stack,Debbie,26
+Starko,Christina,12
+Stouraitis,Vasilios,23
+Swanson,Magnus,23
+Tait,Jo-Anne,16
+Tan,Dylan,19
+Tang,Natassia,26
+Tannasee,Louise,24
+Taylor,Jude,22
+Thomson,Heather,4
+Thorne,Michaela,23
+Troy,Darren,5
+Turkington,Rachael,15
+Turner,Adam,12
+Turner,Michaela,16
+Turney,Chris,3
+Tyagi,Ashit,22
+Umeadi,Patrick,18
+Vincent,Isabel,23
+Walls,Kevin,27
+Warden,Alex,18
+Wedderspoon,Mike,3
+Welsh,Thomas,21
+Wheeler,Grant,6
+Yang,Zhanyu,15
+Youngs,Emily,19
+Yusuf,Lukman,24
+Zwinderman,Mark,10
 `;
 
 /* ---------------------------------------------------------------------------
-   3. TABLES — position on the floorplan, as percentages of the room.
-   x: 0 = far left, 100 = far right.   y: 0 = top (stage end), 100 = bottom.
-   Nudge the numbers until the plan matches the venue layout.
-   Add or delete rows freely — the plan is drawn from this list.
---------------------------------------------------------------------------- */
-const TABLES = [
-  { id: "1",  x: 14, y: 30 }, { id: "2",  x: 32, y: 30 }, { id: "3",  x: 50, y: 30 },
-  { id: "4",  x: 68, y: 30 }, { id: "5",  x: 86, y: 30 },
-  { id: "6",  x: 14, y: 48 }, { id: "7",  x: 32, y: 48 }, { id: "8",  x: 50, y: 48 },
-  { id: "9",  x: 68, y: 48 }, { id: "10", x: 86, y: 48 },
-  { id: "11", x: 14, y: 66 }, { id: "12", x: 32, y: 66 }, { id: "13", x: 50, y: 66 },
-  { id: "14", x: 68, y: 66 }, { id: "15", x: 86, y: 66 },
-  { id: "16", x: 14, y: 84 }, { id: "17", x: 32, y: 84 }, { id: "18", x: 50, y: 84 },
-  { id: "19", x: 68, y: 84 }, { id: "20", x: 86, y: 84 }
-];
-
-/* Fixed features of the room. x/y is the centre, w/h the size, all in percent. */
-const FIXTURES = [
-  { label: "Stage",    x: 50, y: 8,  w: 44, h: 11 },
-  { label: "Bar",      x: 95, y: 12, w: 10, h: 18 },
-  { label: "Entrance", x: 8,  y: 97, w: 16, h: 6  }
-];
-
-/* ---------------------------------------------------------------------------
-   4. FINALISTS
+   3. FINALISTS
    challenge must be one of: Converge, Create Change, KickStart, Net Zero,
    Performing and Production Arts
 --------------------------------------------------------------------------- */
 const FINALISTS = [
 
   /* --- Converge Challenge --- */
+
   {
     name: "FreeForm Photonics",
     challenge: "Converge",
@@ -111,7 +360,7 @@ const FINALISTS = [
     name: "SimPatient",
     challenge: "Converge",
     tagline: "AI simulated patients for clinical communication training",
-    summary: "SimPatient is an AI-powered clinical communication training platform that lets medical students practice full patient consultations with intelligent simulated patients via text, voice, or interactive video avatar, anytime and anywhere. Built on a proprietary language model trained on real anonymised clinical consultations, SimPatient delivers unlimited, curriculum-aligned practice at a fraction of the cost of actor-patient sessions. Already live at the University of St Andrews, we are scaling across UK medical schools to help meet the NHS target of doubling the medical workforce by 2031. SimPatient provides high-quality, safe and scalable communication skills training."
+    summary: "SimPatient is an AI-powered clinical communication training platform that lets medical students practise full patient consultations with intelligent simulated patients via text, voice, or interactive video avatar, anytime and anywhere. Built on a proprietary language model trained on real anonymised clinical consultations, SimPatient delivers unlimited, curriculum-aligned practice at a fraction of the cost of actor-patient sessions. Already live at the University of St Andrews, we are scaling across UK medical schools to help meet the NHS target of doubling the medical workforce by 2031. SimPatient provides high-quality, safe and scalable communication skills training."
   },
   {
     name: "TissueMetrics",
@@ -119,8 +368,8 @@ const FINALISTS = [
     tagline: "An acoustic skin sensor that brings dermatology into the community",
     summary: "TissueMetrics is rethinking skin health for the 300+ million people worldwide suffering from inflammatory skin diseases such as eczema and psoriasis. Current patient journeys rely on subjective assessment, slow trial-and-error treatment cycles, and long waits to see dermatologists. In community settings, pharmacies lack objective tools to offer enhanced skincare services – but are seeking new service capabilities due to decreasing prescription reimbursement and footfall. TissueMetrics has invented an innovative acoustic skin sensor that can measure how the skin’s layers are changing with treatment. This brings dermatologist quality technology to the community, solves these long-standing patient and commercial needs."
   },
-
   /* --- Create Change Challenge --- */
+
   {
     name: "Box of Greebles",
     challenge: "Create Change",
@@ -151,8 +400,8 @@ const FINALISTS = [
     tagline: "Wearable data to shorten the endometriosis and PCOS diagnostic journey",
     summary: "WombWise is a femtech platform that reduces the 8-10 year diagnostic journey for endometriosis and PCOS by using physiological data from everyday wearable devices such as the Oura Ring and Apple Watch to identify non-invasive digital biomarkers of reproductive health conditions. The platform transforms continuous wearable biosignals into structured clinical insights, enabling women to access objective evidence of their symptoms far sooner and supporting earlier, more informed conversations with healthcare professionals. Our goal is to reduce time to diagnosis by up to 90%, improving quality of life and restoring agency for the millions of women living with undiagnosed reproductive health conditions."
   },
-
   /* --- KickStart Challenge --- */
+
   {
     name: "AI for the Eye",
     challenge: "KickStart",
@@ -172,22 +421,16 @@ const FINALISTS = [
     summary: "The NHS handles around 1.7 million interactions daily. Hospitals are under growing strain with long waits, higher patient risk, and mounting pressure on staff and the planet. The need for smarter, forward-looking solutions has never been greater. Bottleneck Explorer is an interactive scenario-planning tool, co-designed with NHS staff and developed by a multidisciplinary team of healthcare, design, and data researchers. It helps healthcare teams test demand changes, understand system impacts, and plan ahead. The results drive better patient flow, saving money, and supporting smarter decision-making."
   },
   {
-    name: "Bubble Magic",
-    challenge: "KickStart",
-    tagline: "Chemical-free ultrasound that destroys PFAS in wastewater",
-    summary: "We are developing a clean chemical-free ultrasound technology that completely destroys persistent pollutants such as PFAS pharmaceuticals and endocrine disruptors, contaminants that current wastewater plants cannot remove. Our compact energy efficient system uses multi frequency cavitation to safely mineralise pollutants into harmless by products and can be integrated into existing treatment infrastructure. With a global multibillion pound market and growing regulatory pressure, this technology offers major benefits for public health and the environment. We have achieved TRL 5/6, validated the technology in the lab and secured collaboration with Scottish Water. We are now preparing for pilot deployment and future commercialisation."
-  },
-  {
-    name: "Ember",
-    challenge: "KickStart",
-    tagline: "Discreet wearable period pain relief designed for athletes",
-    summary: "80% of women experience period pain, and 84% of teenage girls report reduced participation in sport after starting their period, highlighting a significant but overlooked barrier. I am developing a discreet, wearable period pain relief device designed specifically for female athletes, enabling them to manage pain without compromising athletic performance. My product is the first solution designed for compatibility with athletic use and supports improved wellbeing, performance consistency, and long-term sport participation. Developed through testing with 120 athletes, it addresses a clear unmet need and has potential to impact elite sport, grassroots participation, and the wider female health technology sector."
-  },
-  {
     name: "Crop Intel",
     challenge: "KickStart",
     tagline: "AI diagnostics that price the return on every fungicide spray",
     summary: "Crop Intel is an AI-powered decision support platform that helps UK wheat farmers make smarter, more profitable crop protection choices. Traditional agronomy tools identify plant diseases but ignore the financial context. Crop Intel bridges this gap by combining AI visual diagnostics with real-time weather and market data to calculate the Return on Investment (ROI) of a fungicide application. Built by an agronomist, our platform empowers farmers to use chemicals only when it is economically justified. By reducing unnecessary spraying, Crop Intel protects the environment, lowers input costs, and makes sustainable farming profitable by design."
+  },
+  {
+    name: "Exero Sports",
+    challenge: "KickStart",
+    tagline: "Combat sports shin guards with integrated ankle protection",
+    summary: "Exero Sports is a combat sports performance brand developing innovative protective equipment. Our Motus-X shin guard enables athletes to train harder and safer through integrated ankle protection. Developed through user-centred research with combat sports practitioners, the Motus-X addresses a long-standing design flaw while maintaining the comfort and flexibility athletes require. Initially targeting the UK market—which now has over 1 million combat sports practitioners—Exero will launch as a direct-to-consumer brand, combining technical product innovation with a modern sports-tech aesthetic in a historically innovation-stagnant category, to create a globally scalable combat sports brand originating from Scotland."
   },
   {
     name: "Juto Bio",
@@ -196,22 +439,28 @@ const FINALISTS = [
     summary: "Current seaweed-based biostimulants are expensive, seasonally variable and non-specific. Juto Bio uses heterotrophic microalgal fermentation of Scottish whisky distillery waste to produce next-generation crop biostimulants. Our approach eliminates dependence on seaweed harvesting by cultivating microalgae in nutrient-rich distillery co-products - pot ale and spent lees - as a low-cost feedstock. Moreover, synthetic biology allows us to engineer strains that overproduce specific biostimulant compounds, delivering greater efficacy and crop specificity than existing products. The result is a circular economy model that improves farm profitability, reduces synthetic fertiliser use, and strengthens Scottish and global food security."
   },
   {
+    name: "Kumfa Tech",
+    challenge: "KickStart",
+    tagline: "Chemical-free ultrasound that destroys PFAS in wastewater",
+    summary: "We are developing a clean chemical-free ultrasound technology that completely destroys persistent pollutants such as PFAS pharmaceuticals and endocrine disruptors, contaminants that current wastewater plants cannot remove. Our compact energy efficient system uses multi frequency cavitation to safely mineralise pollutants into harmless by products and can be integrated into existing treatment infrastructure. With a global multibillion pound market and growing regulatory pressure, this technology offers major benefits for public health and the environment. We have achieved TRL 5/6, validated the technology in the lab and secured collaboration with Scottish Water. We are now preparing for pilot deployment and future commercialisation."
+  },
+  {
     name: "METASIS",
     challenge: "KickStart",
     tagline: "High-efficiency hydrogen from solid oxide steam electrolysis",
     summary: "METASIS is developing high-efficiency hydrogen production system using solid oxide steam electrolysis (SOSE). By integrating high-temperature (200-1400 °C) heat waste with novel tubular designs and advanced materials, the project aims to reduce the cost and improve the scalability of low-carbon hydrogen. Targeting industrial and energy sectors, METASIS supports the transition to net-zero by enabling more efficient use of renewable and waste heat sources. The solution addresses key challenges in durability, performance, and commercial viability, positioning itself as a next-generation technology for sustainable hydrogen production."
   },
   {
-    name: "Netax Fightwear",
-    challenge: "KickStart",
-    tagline: "Combat sports shin guards with integrated ankle protection",
-    summary: "Netax Fightwear Ltd is a combat sports performance brand developing innovative protective equipment. Our Motus-X shin guard enables athletes to train harder and safer through integrated ankle protection. Developed through user-centred research with combat sports practitioners, the Motus-X addresses a long-standing design flaw while maintaining the comfort and flexibility athletes require. Initially targeting the UK market—which now has over 1 million combat sports practitioners—Netax will launch as a direct-to-consumer brand, combining technical product innovation with a modern sports-tech aesthetic in a historically innovation-stagnant category, to create a globally scalable combat sports brand originating from Scotland."
-  },
-  {
     name: "NovaHealZ",
     challenge: "KickStart",
     tagline: "A plant-derived hydrogel dressing for diabetic foot ulcers",
     summary: "NovaHealZ’s innovation lies in its plant-derived, patent-pending hydrogel nanocomposite that integrates antimicrobial, anti-inflammatory, and moisture-retentive properties within a single platform. Unlike synthetic or silver-based dressings, our solution is biocompatible, non-toxic, and designed for both clinical performance and environmental sustainability. We employ a bio-circular production approach, minimising waste and enabling scalable, eco-conscious manufacturing. Our platform supports both patch and gel formulations tailored to different stages of diabetic foot ulcers, enhancing treatment precision. Currently at prototype stage (TRL 3–4), we are advancing through dry lab validation and in vivo preclinical studies using a rat wound model, supported by scientific and clinical collaborators."
+  },
+  {
+    name: "Ovana Fit",
+    challenge: "KickStart",
+    tagline: "Discreet wearable period pain relief designed for athletes",
+    summary: "80% of women experience period pain, and 84% of teenage girls report reduced participation in sport after starting their period, highlighting a significant but overlooked barrier. I am developing a discreet, wearable period pain relief device designed specifically for female athletes, enabling them to manage pain without compromising athletic performance. My product is the first solution designed for compatibility with athletic use and supports improved wellbeing, performance consistency, and long-term sport participation. Developed through testing with 120 athletes, it addresses a clear unmet need and has potential to impact elite sport, grassroots participation, and the wider female health technology sector."
   },
   {
     name: "The Belonging Quotient",
@@ -225,8 +474,8 @@ const FINALISTS = [
     tagline: "Growing women's and girls' participation across the game",
     summary: "Women’s Football Hub CIC empowers women and girls through having fun in football. We also create research backed resources, including global expert podcasts, and community-building initiatives. We encourage our community to participate in playing, coaching, and refereeing. Growth is supported through our environmentally conscious merchandise store and partnerships with organisations including Walking Football Scotland. Our health and wellbeing focus, led by experienced coaches and health care professionals, aims to increase female involvement in football ahead of the 2035 UK hosted Women’s World Cup."
   },
-
   /* --- Net Zero Challenge --- */
+
   {
     name: "Catalyst Neuromorphic",
     challenge: "Net Zero",
@@ -257,13 +506,12 @@ const FINALISTS = [
     tagline: "KineticLink: grid transmission capacity and inertia in one device",
     summary: "The UK's transition to Net Zero creates two huge infrastructure challenges: transmitting power efficiently over long distances (i.e. offshore wind, north-south corridors, etc) and maintaining the grid stabilising inertia that spinning fossil fuel generators previously provided. Solving these problems cost £1.5 billion last year. TA Technologies, a University of Strathclyde spin-out, is commercialising the KineticLink, a novel patentable invention that delivers both solutions. KineticLink can reduce the current grid transmission infrastructure bottleneck at a very competitive price and simultaneously provide inertia to the grid. Revenue comes from manufacturing and installing KineticLinks, followed by licensing fees and a continuous improvement programme."
   },
-
   /* --- Performing and Production Arts Challenge --- */
   {
-    name: "Four Door Theatre",
+    name: "Character Embodiment",
     challenge: "Performing and Production Arts",
-    tagline: "A feminist-led creative hub for theatre-making in Glasgow",
-    summary: "Four Door Theatre is a Glasgow-based company creating a bold, feminist-led creative hub for theatre-making, learning, and collaboration, aiming to open doors. We deliver accessible workshops for adults and young people across acting, directing, writing, technical theatre, and design, alongside drop-in supported study sessions for drama students. Our space will challenge traditional theatre hierarchies by centring underrepresented voices and removing barriers to participation. With a focus on affordability, flexibility, and community, Four Door Theatre will become a vital local resource, part training ground, part creative lab, where people can develop skills, build confidence, and reimagine what theatre can be."
+    tagline: "Wearable systems that bring digital characters into physical form",
+    summary: "Character Embodiment is a wearable system that transforms digital original characters into lifelike physical bodies. Unlike traditional cosplay, which adapts characters to human anatomy, this approach prioritises character structure, proportions, and identity. By combining fashion design, structural body engineering, and resin fabrication, the project creates bespoke wearable character bodies for performance, exhibition, and collectors. The global anime and cosplay market exceeds $30 billion, with high-spending fans commissioning character-based work. We have received early expressions of interest from customers willing to pay £2,000–£5,000 per piece, indicating strong demand. This project establishes a new category bridging digital identity, performance, and physical fashion."
   },
   {
     name: "ESEA Creatives",
@@ -272,10 +520,10 @@ const FINALISTS = [
     summary: "ESEA Creatives is a Community Interest Company developing a creative platform supporting East and Southeast Asian artists to present work, collaborate and connect with audiences. Through curated events, interdisciplinary productions and partnerships with cultural organisations, we create opportunities for artists to build visibility and professional networks. ESEA Creatives responds to the limited infrastructure supporting ESEA creatives within the UK cultural sector. The project will test pop-up formats and collaborative programming while developing sustainable models for creative production that expand access to diverse cultural experiences."
   },
   {
-    name: "PERIOD",
+    name: "Four Door Theatre",
     challenge: "Performing and Production Arts",
-    tagline: "A disabled-led orchestra reimagining early music",
-    summary: "PERIOD is a disabled-led orchestra redefining how early and classical music are experienced today. Using period instruments for early repertoire and modern instrumentation for contemporary works, the project also explores bold cross-genre collaborations. Through live events, digital content, and orchestral raves, PERIOD reimagines early music for a new generation, making it culturally relevant and accessible. Viral online performances have generated over 3.5 million views across social media, with engagement from electronic artists such as The Chemical Brothers and Pendulum. Collaborations with major labels, including Polydor Records, validate the project’s potential to build audiences and a sustainable future for early music."
+    tagline: "A feminist-led creative hub for theatre-making in Glasgow",
+    summary: "Four Door Theatre is a Glasgow-based company creating a bold, feminist-led creative hub for theatre-making, learning, and collaboration, aiming to open doors. We deliver accessible workshops for adults and young people across acting, directing, writing, technical theatre, and design, alongside drop-in supported study sessions for drama students. Our space will challenge traditional theatre hierarchies by centring underrepresented voices and removing barriers to participation. With a focus on affordability, flexibility, and community, Four Door Theatre will become a vital local resource, part training ground, part creative lab, where people can develop skills, build confidence, and reimagine what theatre can be."
   },
   {
     name: "Stage Analytics",
@@ -284,16 +532,16 @@ const FINALISTS = [
     summary: "Stage Analytics is a data intelligence platform built for the performing arts. At the Edinburgh Festival Fringe — the world's largest arts festival, with 2.6 million tickets across 3,900+ shows — performers make critical decisions on scheduling, marketing and pricing with almost no data. Stage Analytics changes this by transforming fragmented box office, review and audience data into real-time dashboards, benchmarking and predictive insights. Founded by a theatre maker with 12+ years of Fringe experience, and built on a proprietary performance dataset, Stage Analytics democratises data for independent artists and supports the sustainability of Scotland's creative economy."
   },
   {
+    name: "The Ordinary Orchestra",
+    challenge: "Performing and Production Arts",
+    tagline: "A disabled-led orchestra reimagining early music",
+    summary: "The Ordinary Orchestra is a disabled-led orchestra redefining how early and classical music are experienced today. Using period instruments for early repertoire and modern instrumentation for contemporary works, the project also explores bold cross-genre collaborations. Through live events, digital content, and orchestral raves, The Ordinary Orchestra reimagines early music for a new generation, making it culturally relevant and accessible. Viral online performances have generated over 3.5 million views across social media, with engagement from electronic artists such as The Chemical Brothers and Pendulum. Collaborations with major labels, including Polydor Records, validate the project’s potential to build audiences and a sustainable future for early music."
+  },
+  {
     name: "World of Ill Picture Company",
     challenge: "Performing and Production Arts",
     tagline: "Film-making rooted in place and community",
     summary: "World of Ill Picture Company is a film production company with a focus on creating work that is rooted in place and community, integrating vocational and educational outreach. Our objective is to subvert the traditional film process by prioritising dialogues between local communities (people and businesses) and our films. This change in process affects narrative development, location planning, the construct of our crews and engaging place throughout the entire pipeline. Embracing “it takes a village to make a film” into our work from development right through to distribution."
-  },
-  {
-    name: "Character Embodiment",
-    challenge: "Performing and Production Arts",
-    tagline: "Wearable systems that bring digital characters into physical form",
-    summary: "Character Embodiment is a wearable system that transforms digital original characters into lifelike physical bodies. Unlike traditional cosplay, which adapts characters to human anatomy, this approach prioritises character structure, proportions, and identity. By combining fashion design, structural body engineering, and resin fabrication, the project creates bespoke wearable character bodies for performance, exhibition, and collectors. The global anime and cosplay market exceeds $30 billion, with high-spending fans commissioning character-based work. We have received early expressions of interest from customers willing to pay £2,000–£5,000 per piece, indicating strong demand. This project establishes a new category bridging digital identity, performance, and physical fashion."
   }
 ];
 </script>
@@ -459,18 +707,19 @@ section[hidden]{display:none}
 .pick:hover{background:rgba(255,255,255,.08)}
 .pick b{font-weight:600}
 
-.plan-wrap{overflow-x:auto;margin-top:2rem;padding-bottom:.5rem}
-.plan{position:relative;min-width:600px;aspect-ratio:16/11;background:rgba(255,255,255,.06);border:1px solid var(--rule)}
-.fixture{position:absolute;transform:translate(-50%,-50%);background:var(--light-blue);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:.85rem;letter-spacing:.08em}
-.table-dot{
-  position:absolute;transform:translate(-50%,-50%);
-  width:8.5%;aspect-ratio:1;border-radius:50%;
-  background:rgba(255,255,255,.08);border:1.5px solid var(--light-blue);color:var(--ink);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--display);font-weight:600;font-size:clamp(.8rem,1.4vw,1rem);
+.seat-list{max-width:46rem;margin-top:1.5rem}
+.seat-list:not(:empty){border-top:1px solid var(--rule)}
+.seat-row{
+  display:flex;align-items:baseline;gap:1rem;width:100%;text-align:left;
+  background:transparent;border:0;border-bottom:1px solid rgba(180,230,250,.16);
+  color:var(--ink);font-family:var(--body);font-size:1.02rem;padding:.75rem .4rem;cursor:pointer;
 }
-.table-dot.is-found{background:var(--yellow);border-color:var(--yellow);color:var(--navy);transform:translate(-50%,-50%) scale(1.22);box-shadow:0 0 0 .55rem rgba(254,203,0,.28)}
-@media (prefers-reduced-motion:no-preference){.table-dot{transition:transform .35s ease,background .35s ease,box-shadow .35s ease}}
+.seat-row:hover{background:rgba(255,255,255,.07)}
+.seat-row[aria-current="true"]{background:rgba(254,203,0,.14)}
+.seat-name{flex:1}
+.seat-org{color:var(--ink-mute);font-size:.88rem}
+.seat-table{font-family:var(--display);font-weight:600;color:var(--yellow);white-space:nowrap}
+.no-match{padding:1.25rem .4rem;color:var(--ink-soft);margin:0}
 
 footer{border-top:1px solid var(--rule);padding:2rem 0 3rem;font-size:.95rem;color:var(--ink-mute)}
 footer a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3px}
@@ -531,16 +780,15 @@ footer a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3p
           <label for="seat-search">Find your table</label>
           <input id="seat-search" type="search" autocomplete="off" placeholder="Start typing your name">
         </div>
+        <p class="count" id="seat-count" aria-live="polite"></p>
       </div>
       <div id="seat-results" aria-live="polite"></div>
-      <div class="plan-wrap">
-        <div class="plan" id="plan" role="img" aria-label="Floorplan of the dining room"></div>
-      </div>
+      <div class="seat-list" id="seat-list"></div>
     </div>
 
     <div class="empty" id="seating-soon" hidden>
       <h3>Seating opens closer to the night</h3>
-      <p>Table allocations go live here a few days before the dinner. Come back to this page and type your name to find your seat.</p>
+      <p>The guest list and table numbers go live here a few days before the dinner. Come back to this page and type your name to find your seat.</p>
       <p>In the meantime, the finalist profiles are ready to browse.</p>
     </div>
   </section>
@@ -588,10 +836,17 @@ footer a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3p
       t.setAttribute("aria-selected", on ? "true" : "false");
       document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
     });
-    if (push) history.replaceState(null, "", "#" + id.replace("tab-", ""));
+    /* Updating the address bar fails inside sandboxed previews, which have no
+       history of their own. The tab still switches; only the #hash is lost. */
+    if (push) {
+      try { history.replaceState(null, "", "#" + id.replace("tab-", "")); }
+      catch (e) { /* preview sandbox — ignore */ }
+    }
   }
   tabs.forEach(t => t.addEventListener("click", () => showTab(t.id, true)));
-  if (location.hash === "#seating") showTab("tab-seating", false);
+  try {
+    if (location.hash === "#seating") showTab("tab-seating", false);
+  } catch (e) { /* preview sandbox — ignore */ }
 
   /* ---------- finalists ---------- */
   const active = new Set();
@@ -619,6 +874,10 @@ footer a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3p
       if (active.size && !active.has(f.challenge)) return false;
       if (!q) return true;
       return norm([f.name, f.lead, f.challenge, f.tagline, f.summary].join(" ")).includes(q);
+    }).sort((a, b) => {
+      const byChallenge = CHALLENGES.findIndex(c => c.key === a.challenge) -
+                          CHALLENGES.findIndex(c => c.key === b.challenge);
+      return byChallenge || a.name.localeCompare(b.name, "en", { sensitivity: "base" });
     });
 
     grid.innerHTML = "";
@@ -645,89 +904,92 @@ footer a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3p
   renderFinalists();
 
   /* ---------- seating ---------- */
-  function parseSeating(raw) {
-    return raw.split("\n").map(l => l.trim()).filter(Boolean)
-      .filter(l => !/^name[\s,\t]/i.test(l))
-      .map(line => {
-        let name, table, org = "";
-        if (line.includes("\t")) {
-          const p = line.split("\t").map(s => s.trim());
-          name = p[0]; table = p[1] || ""; org = p[2] || "";
-        } else {
-          const i = line.lastIndexOf(",");
-          if (i === -1) return null;
-          name = line.slice(0, i).trim();
-          table = line.slice(i + 1).trim();
-        }
-        return name && table ? { name, table, org } : null;
-      })
-      .filter(Boolean);
+  /* Spreadsheet header rows are skipped automatically. */
+  const HEADER_WORD = /^((last|first|full|guest)\s*)?name$|^(assigned\s*)?table$|^(org|organisation|organization|company|institution)$/i;
+
+  function parseSeating(raw, spec) {
+    const cols = spec.split(",").map(c => c.trim().toLowerCase());
+    return raw.split("\n").map(l => l.trim()).filter(Boolean).map(line => {
+      const parts = (line.includes("\t") ? line.split("\t") : line.split(","))
+        .map(p => p.trim().replace(/^"|"$/g, ""));
+      if (parts.some(p => HEADER_WORD.test(p))) return null;
+      const f = {};
+      cols.forEach((c, i) => { f[c] = (parts[i] || "").trim(); });
+      const name = f.name || [f.first, f.last].filter(Boolean).join(" ");
+      if (!name || !f.table) return null;
+      return {
+        name:    name,
+        table:   f.table,
+        org:     f.org || "",
+        sortKey: (f.last || name).toLowerCase(),
+        hay:     norm([name, f.first, f.last, f.org].join(" "))
+      };
+    }).filter(Boolean);
   }
 
-  const guests = parseSeating(SEATING);
+  const guests = parseSeating(SEATING, SEATING_COLUMNS);
   const hasSeating = guests.length > 0;
   $("#seating-live").hidden = !hasSeating;
   $("#seating-soon").hidden = hasSeating;
 
   if (hasSeating) {
-    const plan = $("#plan");
-    FIXTURES.forEach(f => {
-      const el = document.createElement("div");
-      el.className = "fixture";
-      el.style.cssText = "left:" + f.x + "%;top:" + f.y + "%;width:" + f.w + "%;height:" + f.h + "%";
-      el.textContent = f.label;
-      plan.appendChild(el);
-    });
-    TABLES.forEach(t => {
-      const el = document.createElement("div");
-      el.className = "table-dot";
-      el.dataset.table = String(t.id);
-      el.style.cssText = "left:" + t.x + "%;top:" + t.y + "%";
-      el.textContent = t.id;
-      plan.appendChild(el);
-    });
-
-    function highlight(table) {
-      plan.querySelectorAll(".table-dot").forEach(d =>
-        d.classList.toggle("is-found", norm(d.dataset.table) === norm(table)));
-    }
+    guests.sort((a, b) => a.sortKey.localeCompare(b.sortKey, "en"));
 
     const results = $("#seat-results");
+    const listEl  = $("#seat-list");
+    const countEl = $("#seat-count");
+
     function showGuest(g) {
-      const mates = guests.filter(o => o.table === g.table && o.name !== g.name);
+      const mates = SHOW_TABLEMATES
+        ? guests.filter(o => o.table === g.table && o !== g)
+        : [];
       results.innerHTML =
         '<div class="result"><h3>' + g.name + "</h3>" +
         (g.org ? '<p class="org">' + g.org + "</p>" : "") +
         '<span class="table-no">Table ' + g.table + "</span>" +
         (mates.length
-          ? "<p>You're sitting with:</p><ul>" + mates.map(m => "<li>" + m.name + (m.org ? " — " + m.org : "") + "</li>").join("") + "</ul>"
+          ? "<p>You're sitting with:</p><ul>" + mates.map(m =>
+              "<li>" + m.name + (m.org ? " \u2014 " + m.org : "") + "</li>").join("") + "</ul>"
           : "<p>Table details are on the card at your place setting.</p>") +
         "</div>";
-      highlight(g.table);
+      listEl.querySelectorAll(".seat-row").forEach(r =>
+        r.setAttribute("aria-current", guests[+r.dataset.i] === g ? "true" : "false"));
     }
 
-    function runSearch() {
+    function render() {
       const q = norm($("#seat-search").value);
-      if (q.length < 2) { results.innerHTML = ""; highlight(null); return; }
-      const hits = guests.filter(g => norm(g.name).includes(q) || norm(g.org).includes(q));
+      results.innerHTML = "";
 
-      if (!hits.length) {
-        results.innerHTML = '<div class="result multi"><h3>No match for that spelling</h3>' +
-          "<p>Try your surname on its own, or ask a member of the Converge team and they'll find you.</p></div>";
-        highlight(null); return;
+      /* The list stays hidden until someone searches for themselves. */
+      if (q.length < 2) {
+        listEl.innerHTML = "";
+        countEl.textContent = "Type at least two letters of your name to see your table.";
+        return;
       }
-      if (hits.length === 1) { showGuest(hits[0]); return; }
 
-      results.innerHTML = '<div class="result multi"><h3>' + hits.length + " people match</h3>" +
-        "<p>Pick your name:</p>" +
-        hits.slice(0, 12).map((g, i) =>
-          '<button class="pick" data-i="' + i + '"><b>' + g.name + "</b>" + (g.org ? " — " + g.org : "") + "</button>").join("") +
-        "</div>";
-      results.querySelectorAll(".pick").forEach(btn =>
-        btn.addEventListener("click", () => showGuest(hits[+btn.dataset.i])));
-      highlight(null);
+      const shown = guests.filter(g => g.hay.includes(q));
+
+      listEl.innerHTML = shown.length
+        ? shown.map(g =>
+            '<button class="seat-row" type="button" data-i="' + guests.indexOf(g) + '">' +
+            '<span class="seat-name">' + g.name + "</span>" +
+            (g.org ? '<span class="seat-org">' + g.org + "</span>" : "") +
+            '<span class="seat-table">Table ' + g.table + "</span></button>").join("")
+        : '<p class="no-match">No one of that name on the list. Try a surname on its own, ' +
+          "or ask a member of the Converge team and they'll find you.</p>";
+
+      countEl.textContent = shown.length
+        ? shown.length + (shown.length === 1 ? " match" : " matches")
+        : "";
+
+      if (shown.length === 1) showGuest(shown[0]);
+
+      listEl.querySelectorAll(".seat-row").forEach(btn =>
+        btn.addEventListener("click", () => showGuest(guests[+btn.dataset.i])));
     }
-    $("#seat-search").addEventListener("input", runSearch);
+
+    $("#seat-search").addEventListener("input", render);
+    render();
   }
 })();
 </script>
